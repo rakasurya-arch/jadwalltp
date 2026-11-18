@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Jadwal Revisi LTP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: satu kolom sempit, fase sebagai blok bertanggal, tugas sebagai baris yang bisa dicentang. */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --fg:#1A1D24; --muted:#5C6370; --line:#DDE0E6;
+  --accent:#2F4FD8; --accent-soft:#E6EBFB; --done:#1F8A5B; --warn:#B4531A; --warn-soft:#FBEBDD;
+  --easy:#1F8A5B; --mid:#9A6B00; --hard:#B4321F;
+  --font:'DM Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1218; --surface:#171B23; --fg:#ECEEF2; --muted:#9AA1AE; --line:#2A303B;
+    --accent:#7C93FF; --accent-soft:#1E2542; --done:#4FCB93; --warn:#F0A064; --warn-soft:#33241A;
+    --easy:#4FCB93; --mid:#E3B341; --hard:#F27A68; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1218; --surface:#171B23; --fg:#ECEEF2; --muted:#9AA1AE; --line:#2A303B;
+  --accent:#7C93FF; --accent-soft:#1E2542; --done:#4FCB93; --warn:#F0A064; --warn-soft:#33241A;
+  --easy:#4FCB93; --mid:#E3B341; --hard:#F27A68; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.45;
+  padding-block:32px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.1;font-weight:700;text-wrap:balance;margin:0}
+.sub{color:var(--muted);margin:6px 0 0}
+.top{display:flex;flex-direction:column;gap:16px}
+.prog{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.prog-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.prog-row b{font-size:20px}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--done);width:0;transition:width .3s}
+.next{border:1px solid var(--accent);background:var(--accent-soft);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.next small{color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-size:12px;font-weight:700}
+.next strong{font-size:18px}
+.phase{display:flex;flex-direction:column;gap:10px}
+.phase h2{margin:0;font-size:20px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.phase h2 span{color:var(--muted);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
+.phase p.pnote{margin:0;color:var(--muted);font-size:14px}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.task{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line);min-width:0}
+.task:first-child{border-top:0}
+.task.today{box-shadow:inset 4px 0 0 var(--accent)}
+.task input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--done);cursor:pointer}
+.body{min-width:0;display:flex;flex-direction:column;gap:6px}
+.body label{font-weight:700;cursor:pointer}
+.task.isdone .body label{color:var(--muted);text-decoration:line-through}
+.meta{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{border:1px solid var(--line);border-radius:99px;padding:1px 9px;font-weight:500}
+.tag.easy{color:var(--easy);border-color:var(--easy)}
+.tag.mid{color:var(--mid);border-color:var(--mid)}
+.tag.hard{color:var(--hard);border-color:var(--hard)}
+.tag.now{background:var(--accent);border-color:var(--accent);color:#fff}
+.tag.late{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.detail{color:var(--muted);font-size:15px;margin:0}
+.foot{color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.warn{color:var(--warn);font-size:14px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+
+.pct{font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.pct small{font-size:22px;color:var(--muted);font-weight:500}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:4px}
+.chart{width:100%}
+.chart svg{display:block;width:100%;height:auto}
+.chart .g{stroke:var(--line);stroke-width:1}
+.chart .t{fill:var(--muted);font-size:12px;font-family:var(--font)}
+.chart .plan{fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:6 5}
+.chart .act{fill:none;stroke:var(--done);stroke-width:3;stroke-linejoin:round}
+.chart .dot{fill:var(--done)}
+.chart .now{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 4}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:3px solid var(--done);vertical-align:middle;margin-right:6px}
+.legend i.p{border-top:2px dashed var(--muted)}
+.small{font-size:13px}
+.notes{display:flex;flex-direction:column;gap:10px}
+.notes h2{margin:0;font-size:20px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.notes h2 span{color:var(--muted);font-size:14px;font-weight:500}
+.compose{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.compose textarea{width:100%;min-height:84px;resize:vertical;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.compose .row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 16px;font-weight:700}
+button.ghost{background:transparent;color:var(--muted);border-color:var(--line);font-weight:500;padding:4px 10px;font-size:13px}
+.note{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;padding:12px 16px;border-top:1px solid var(--line);align-items:start;min-width:0}
+.note:first-child{border-top:0}
+.note input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--done);cursor:pointer}
+.note .nt{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.note.isdone .nt{color:var(--muted);text-decoration:line-through}
+.note time{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.empty{padding:16px;color:var(--muted);font-size:14px}
+</style>
+
+<main>
+  <div class="top">
+    <div>
+      <h1>Jadwal Revisi LTP</h1>
+      <p class="sub">18 November – 5 Desember 2026 · 17 tugas, dari yang ringan ke yang berat. Centang tugas yang sudah selesai.</p>
+    </div>
+    <div class="prog" aria-live="polite">
+      <div class="prog-row"><span class="pct"><span id="pct">0</span><small>%</small></span><span><b id="cnt">0</b> dari <span id="tot">17</span> tugas selesai</span><span id="days"></span></div>
+      <div><div class="bar"><i id="fill"></i></div><div class="ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+      <div class="chart" id="chart"></div>
+      <div class="legend"><span><i></i>Progres nyata</span><span><i class="p"></i>Rencana</span></div>
+      <span class="small sub">Persen dihitung dengan bobot: Mudah 1, Sedang 2, Sulit 3, supaya tugas berat terasa lebih besar.</span>
+      <span class="small sub">Data tersimpan di browser ini. Unduh cadangan secara berkala; untuk pindah ke perangkat lain, unduh di sini lalu pulihkan di sana.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="ghost" id="exp">Unduh cadangan</button><button type="button" class="ghost" id="impbtn">Pulihkan cadangan</button><input type="file" id="imp" accept="application/json,.json" hidden></div>
+    </div>
+    <div class="next" id="next" hidden><small>Berikutnya</small><strong id="nexttitle"></strong><span id="nextdate" class="sub"></span></div>
+  </div>
+  <div id="phases"></div>
+  <section class="notes">
+    <h2>Catatan <span id="ncount"></span></h2>
+    <div class="compose">
+      <label for="notein" class="small sub">Tulis temuan, keputusan, atau hal yang harus dicek. Tiap catatan bisa dicentang kalau sudah beres.</label>
+      <textarea id="notein" placeholder="Contoh: cek halaman Barnwell untuk definisi backlot"></textarea>
+      <div class="row"><span class="small sub">Catatan terbaru muncul di atas.</span><button id="addnote" type="button">Tambah catatan</button></div>
+    </div>
+    <div class="list" id="notes"></div>
+  </section>
+  <div class="foot">
+    <span>Dosen 1 (D1) dan dosen 2 (D2) menandai asal tiap revisi. Tanggal bisa digeser, urutan fase sebaiknya dijaga: Bab III bergantung pada breakdown cerita, dan Bab VI bergantung pada Bab III dan V.</span>
+    <span>Bab IV tidak direvisi dosen, tetapi angka lahan dan kapasitasnya harus ikut selaras dengan Bab III yang baru (tugas 14).</span>
+  </div>
+</main>
+
+<script>
+(function(){
+  var PHASES=[
+    {name:"Fase 1 · Pemanasan",range:"18 Nov",note:"Dua tugas ringan dikerjakan dalam sehari.",tasks:[
+      {id:"t1",d:["2026-11-18","2026-11-18"],lv:"easy",bab:"Bab II · D1",t:"Tabel kriteria dan skoring kecamatan",x:"Buat kriteria dan skor untuk Borobudur, Mungkid, Mertoyudan (format seperti Tabel 14), lalu satu kalimat penentuan Mungkid sebagai klasifikasi akhir."},
+      {id:"t2",d:["2026-11-18","2026-11-18"],lv:"easy",bab:"Bab I · D1, D2",t:"Draf matriks orisinalitas dan jawaban fungsi lain",x:"Matriks preseden × aspek (basis cerita, era, set kampung permanen, studio indoor, wisata edukasi, dasar penghitungan ruang). Draf paragraf: backlot dihitung dari Na Willa, set modular untuk produksi lain bersetting kampung kota 1960–1970-an. Difinalkan di tugas 14."}
+    ]},
+    {name:"Fase 2 · Teori (Bab V)",range:"19–21 Nov",note:"22 Nov sengaja kosong sebagai cadangan.",tasks:[
+      {id:"t3",d:["2026-11-19","2026-11-19"],lv:"mid",bab:"Bab V · D1, D2",t:"Cari dan cek sumber teori backlot dan set film",x:"Kandidat: Barnwell, LoBrutto, Preston, Neumann. Pastikan bukunya ada, catat halaman yang dipakai."},
+      {id:"t4",d:["2026-11-19","2026-11-19"],lv:"mid",bab:"Bab V · D1, D2",t:"Cari dan cek sumber pascakolonial dan kenyamanan visual",x:"Pascakolonial: Bhabha, Handinoto, Silas. Visual: Cullen, Appleton, Kaplan & Kaplan. Verifikasi semua sitasi sebelum dipakai."},
+      {id:"t5",d:["2026-11-20","2026-11-20"],lv:"mid",bab:"Bab V · D2",t:"Tulis teori backlot dan arsitektur pascakolonial",x:"Tiap teori dihubungkan ke satu keputusan desain konkret."},
+      {id:"t6",d:["2026-11-21","2026-11-21"],lv:"mid",bab:"Bab V · D1",t:"Tulis teori kenyamanan visual dan pertegas Ching untuk backlot",x:"Tabel teori → variabel desain. Ide yang bisa dipakai: sudut pandang anak (Na Willa) sebagai dasar ketinggian mata dan skala set; pastikan di novel."}
+    ]},
+    {name:"Fase 3 · Inti (Bab III)",range:"23–26 Nov",note:"Bagian tersulit, dipadatkan: dua langkah sehari pada 23 dan 24 Nov.",tasks:[
+      {id:"t7",d:["2026-11-23","2026-11-23"],lv:"hard",bab:"Bab III · D1",t:"Breakdown cerita Na Willa",x:"Tabel adegan, lokasi/set, interior atau eksterior, tokoh, jumlah ekstras. Dari novel dan film. Dasar semua perhitungan berikutnya."},
+      {id:"t8",d:["2026-11-23","2026-11-23"],lv:"hard",bab:"Bab III · D1, D2",t:"Kapasitas dari data kru dan cast Na Willa",x:"Tentukan angka puncak (adegan terpadat), kru pra-produksi, dan batasan pasca-produksi = 0 di tapak. Putuskan apakah wisata dan syuting bersamaan. Jelaskan selisih 686 / 655 / 661."},
+      {id:"t9",d:["2026-11-24","2026-11-24"],lv:"hard",bab:"Bab III · D1",t:"Standar dan studi ruang per kapasitas",x:"Cari standar luas per orang (Neufert, Permen PUPR 14/2017, dll.), hitung tiap ruang dari kapasitasnya. Cek khusus: istirahat crew dan ruang ganti."},
+      {id:"t10",d:["2026-11-24","2026-11-24"],lv:"hard",bab:"Bab III · D1",t:"Ruang luar selain gang dan parkir",x:"Holding ekstras, base camp, catering, parkir kendaraan produksi, plaza masuk, RTH. Luas set backlot diturunkan dari cerita."},
+      {id:"t11",d:["2026-11-25","2026-11-25"],lv:"hard",bab:"Bab III · D1, D2",t:"Hitung ulang ruang dalam, ruang luar, lahan, KDB, KLB",x:"Pisahkan ruang dalam dari ruang luar. Benahi kesalahan lama: H ≈1.348, bus, SRP motor, selisih 120 m², KDB 15.754 vs 15.759. Tambah skenario sensitivitas."},
+      {id:"t12",d:["2026-11-26","2026-11-26"],lv:"hard",bab:"Bab III · D1, D2",t:"Tulis ulang narasi dan tabel Bab III",x:"Tulis asal tiap angka dan alasan tiap asumsi."}
+    ]},
+    {name:"Fase 4 · Menyambung",range:"27–29 Nov",note:"Bab VI dan bab lain disesuaikan dengan hasil Bab III.",tasks:[
+      {id:"t13",d:["2026-11-27","2026-11-27"],lv:"hard",bab:"Bab VI · D1",t:"Tuntutan film Na Willa di Bab VI",x:"Turunkan dari breakdown dan teori: kekhasan Na Willa dan konsekuensinya ke ruang, set, dan tapak."},
+      {id:"t14",d:["2026-11-28","2026-11-28"],lv:"mid",bab:"Bab I, IV",t:"Finalkan Bab I dan selaraskan Bab IV",x:"Bab I dibuat konsisten dengan isi akhir. Bab IV dicek: lahan, kapasitas, dan angka lain sama dengan Bab III."},
+      {id:"t15",d:["2026-11-29","2026-11-29"],lv:"easy",bab:"Seluruh LTP",t:"Abstrak, daftar isi, tabel, gambar, pustaka",x:"Perbarui semua daftar dan pastikan sitasi baru masuk daftar pustaka."}
+    ]},
+    {name:"Fase 5 · Penutup",range:"30 Nov–5 Des",note:"Baca ulang 30 Nov. Tanggal 1–4 Des cadangan untuk tugas yang molor. Kirim 5 Des.",tasks:[
+      {id:"t16",d:["2026-11-30","2026-11-30"],lv:"mid",bab:"Seluruh LTP",t:"Baca ulang dan cek konsistensi angka antar bab",x:"Kapasitas, luas, KDB, KLB, dan lahan harus sama di semua bab dan tabel. Jalankan pemeriksaan penuh; 1–4 Des tersedia untuk perbaikan."},
+      {id:"t17",d:["2026-12-05","2026-12-05"],lv:"easy",bab:"Seluruh LTP",t:"Finalisasi dan kirim",x:"Ekspor PDF, cek tampilan, kumpulkan."}
+    ]}
+  ];
+  var LV={easy:"Mudah",mid:"Sedang",hard:"Sulit"};
+  var WT={easy:1,mid:2,hard:3};
+  var MON=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  var START=new Date(2026,10,18,0,0,0), DAYS=18, DAY=86400000;
+  var done={}, notes=[], db=null;
+  var LSK="jadwalrevisi:v1";
+  function lsLoad(){try{var o=JSON.parse(localStorage.getItem(LSK)||"{}");if(o.done&&typeof o.done==="object")done=o.done;if(Array.isArray(o.notes))notes=o.notes}catch(e){}}
+  function lsSave(){try{localStorage.setItem(LSK,JSON.stringify({done:done,notes:notes}))}catch(e){}}
+  lsLoad();
+  var all=[];PHASES.forEach(function(p){p.tasks.forEach(function(t){all.push(t)})});
+  var TOTW=all.reduce(function(a,t){return a+WT[t.lv]},0);
+  function ds(iso){var a=iso.split("-");return +a[2]+" "+MON[+a[1]-1]}
+  function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+  function range(t){return t.d[0]===t.d[1]?ds(t.d[0]):ds(t.d[0])+" – "+ds(t.d[1])}
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+  function xOf(ms){return Math.max(0,Math.min(DAYS,(ms-START.getTime())/DAY))}
+  function drawChart(pct){
+    var el=document.getElementById("chart"), W=Math.max(280,el.clientWidth||600), H=210, L=38, R=10, T=10, B=26;
+    var pw=W-L-R, ph=H-T-B;
+    function X(d){return (L+pw*d/DAYS).toFixed(1)} function Y(v){return (T+ph*(1-v/100)).toFixed(1)}
+    var g="";
+    [0,25,50,75,100].forEach(function(v){g+='<line class="g" x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="t" x="'+(L-6)+'" y="'+(+Y(v)+4)+'" text-anchor="end">'+v+'%</text>'});
+    [[0,"18 Nov"],[7,"25 Nov"],[14,"2 Des"],[17,"5 Des"]].forEach(function(a){g+='<text class="t" x="'+X(a[0])+'" y="'+(H-6)+'" text-anchor="'+(a[0]===0?"start":a[0]===17?"end":"middle")+'">'+a[1]+'</text>'});
+    var planPts="0,0";
+    var pp=[[0,0]];
+    for(var d=0;d<=17;d++){var c=0;all.forEach(function(t){var e=Math.round((new Date(t.d[1]+"T00:00:00")-START)/DAY);if(e<=d)c+=WT[t.lv]});pp.push([d+1,c/TOTW*100])}
+    var plan=pp.map(function(p){return X(p[0])+","+Y(p[1])}).join(" ");
+    var ev=[];all.forEach(function(t){if(done[t.id]){var at=done[t.id]===1||!done[t.id]?Date.now():Date.parse(done[t.id]);ev.push([isNaN(at)?Date.now():at,WT[t.lv]])}});
+    ev.sort(function(a,b){return a[0]-b[0]});
+    var now=Date.now(), c2=0, ap=[[0,0]], dots="";
+    ev.forEach(function(e){var x=xOf(e[0]);ap.push([x,c2/TOTW*100]);c2+=e[1];ap.push([x,c2/TOTW*100]);dots+='<circle class="dot" cx="'+X(x)+'" cy="'+Y(c2/TOTW*100)+'" r="3.5"/>'});
+    var nx=xOf(now);ap.push([Math.max(nx,ap[ap.length-1][0]),pct]);
+    var act=ap.map(function(p){return X(p[0])+","+Y(p[1])}).join(" ");
+    var nowline=(now>=START.getTime()&&now<=START.getTime()+DAYS*DAY)?'<line class="now" x1="'+X(nx)+'" x2="'+X(nx)+'" y1="'+T+'" y2="'+(T+ph)+'"/>':"";
+    el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img" aria-label="Grafik progres revisi dari 0 sampai 100 persen, rencana dan nyata">'+g+nowline+'<polyline class="plan" points="'+plan+'"/><polyline class="act" points="'+act+'"/>'+dots+'</svg>';
+  }
+  function render(){
+    lsSave();
+    var td=today(),n=0,w=0,first=null,h="";
+    PHASES.forEach(function(p){
+      h+='<section class="phase"><h2>'+esc(p.name)+' <span>'+p.range+'</span></h2><p class="pnote">'+esc(p.note)+'</p><div class="list">';
+      p.tasks.forEach(function(t){
+        var dn=!!done[t.id]; if(dn){n++;w+=WT[t.lv]} else if(!first)first=t;
+        var now=!dn&&td>=t.d[0]&&td<=t.d[1], late=!dn&&t.d[1]<td;
+        h+='<div class="task'+(dn?' isdone':'')+(now?' today':'')+'"><input type="checkbox" id="c_'+t.id+'" data-id="'+t.id+'"'+(dn?' checked':'')+'>'+
+          '<div class="body"><label for="c_'+t.id+'">'+esc(t.t)+'</label><div class="meta"><span>'+range(t)+'</span><span class="tag '+t.lv+'">'+LV[t.lv]+'</span><span class="tag">'+esc(t.bab)+'</span>'+(now?'<span class="tag now">Hari ini</span>':'')+(late?'<span class="tag late">Lewat jadwal</span>':'')+'</div><p class="detail">'+esc(t.x)+'</p></div></div>';
+      });
+      h+='</div></section>';
+    });
+    document.getElementById("phases").innerHTML=h;
+    var pct=Math.round(w/TOTW*100);
+    document.getElementById("cnt").textContent=n;
+    document.getElementById("tot").textContent=all.length;
+    document.getElementById("pct").textContent=pct;
+    document.getElementById("fill").style.width=pct+"%";
+    var end=new Date("2026-12-05T23:59:59"), left=Math.ceil((end-new Date())/DAY);
+    document.getElementById("days").textContent=left>0?left+" hari sampai 5 Des":(left===0?"Hari ini batas akhir":"Lewat batas 5 Des");
+    var nxe=document.getElementById("next");
+    nxe.hidden=false;
+    if(first){document.getElementById("nexttitle").textContent=first.t;document.getElementById("nextdate").textContent=range(first)+" · "+first.bab}else{document.getElementById("nexttitle").textContent="Semua tugas selesai";document.getElementById("nextdate").textContent=""}
+    drawChart(w/TOTW*100);
+  }
+  function renderNotes(){
+    lsSave();
+    var box=document.getElementById("notes"); box.textContent="";
+    var arr=notes.slice().sort(function(a,b){return (b.at||"")<(a.at||"")?-1:1});
+    var nd=arr.filter(function(x){return x.done}).length;
+    document.getElementById("ncount").textContent=arr.length?nd+" dari "+arr.length+" selesai":"";
+    if(!arr.length){var e=document.createElement("div");e.className="empty";e.textContent="Belum ada catatan.";box.appendChild(e);return}
+    arr.forEach(function(x){
+      var r=document.createElement("div");r.className="note"+(x.done?" isdone":"");
+      var cb=document.createElement("input");cb.type="checkbox";cb.checked=!!x.done;cb.setAttribute("aria-label","Selesai");
+      cb.addEventListener("change",function(){x.done=cb.checked;renderNotes();if(db){try{db.doc("notes/"+x.id).update({done:cb.checked}).catch(function(){})}catch(e){}}});
+      var m=document.createElement("div");var t=document.createElement("div");t.className="nt";t.textContent=x.text;
+      var tm=document.createElement("time");var d=new Date(x.at||Date.now());tm.textContent=d.getDate()+" "+MON[d.getMonth()]+" · "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+      m.appendChild(t);m.appendChild(tm);
+      var del=document.createElement("button");del.type="button";del.className="ghost";del.textContent="Hapus";
+      del.addEventListener("click",function(){notes=notes.filter(function(y){return y.id!==x.id});renderNotes();if(db){try{db.doc("notes/"+x.id).delete().catch(function(){})}catch(e){}}});
+      r.appendChild(cb);r.appendChild(m);r.appendChild(del);box.appendChild(r);
+    });
+  }
+  document.getElementById("phases").addEventListener("change",function(e){
+    var id=e.target.getAttribute("data-id"); if(!id)return;
+    var on=e.target.checked, at=new Date().toISOString(); if(on)done[id]=at; else delete done[id]; render();
+    if(db){try{var r=db.doc("done/"+id);(on?r.set({done:true,at:at}):r.delete()).catch(function(){})}catch(x){}}
+  });
+  document.getElementById("addnote").addEventListener("click",function(){
+    var ta=document.getElementById("notein"), v=ta.value.trim(); if(!v)return;
+    var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6), at=new Date().toISOString();
+    notes.push({id:id,text:v,done:false,at:at}); ta.value=""; renderNotes();
+    if(db){try{db.doc("notes/"+id).set({text:v,done:false,at:at}).catch(function(){})}catch(e){}}
+  });
+  window.addEventListener("resize",function(){render()});
+  document.getElementById("exp").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify({done:done,notes:notes},null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="cadangan-jadwal-revisi.json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+  });
+  document.getElementById("impbtn").addEventListener("click",function(){document.getElementById("imp").click()});
+  document.getElementById("imp").addEventListener("change",function(e){
+    var f=e.target.files[0]; if(!f)return; var r=new FileReader();
+    r.onload=function(){try{var o=JSON.parse(r.result);if(o&&typeof o.done==="object"&&Array.isArray(o.notes)){done=o.done;notes=o.notes.filter(function(x){return x&&typeof x.text==="string"});render();renderNotes()}else{alert("File cadangan tidak dikenali.")}}catch(x){alert("File cadangan tidak dikenali.")}e.target.value=""};
+    r.readAsText(f);
+  });
+  render();renderNotes();
+})();
+</script>
+
+</body>
+</html>
